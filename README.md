@@ -1,6 +1,8 @@
 # stomp
 
-STOMP client library written in C
+STOMP client library written in C.
+
+Fork for Asseco internal project.
 
 ## The library aims to implement support for the following protocols:
 
