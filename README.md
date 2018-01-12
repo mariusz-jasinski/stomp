@@ -1,8 +1,11 @@
 # stomp
 
 STOMP client library written in C.
+LICENSE: see COPYING file
 
 Fork for Asseco internal project. HP-UX aCC platform compatible.
+Public GitHub Location: https://github.com/mariusz-jasinski/stomp
+
 
 ## The library aims to implement support for the following protocols:
 
