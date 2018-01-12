@@ -23,6 +23,12 @@
 extern "C" {
 #endif
 
+enum stomp_prot {
+	SPL_10,
+	SPL_11,
+	SPL_12
+};
+
 /**
  * An opaque STOMP sesstion handle
  *
@@ -116,6 +122,15 @@ typedef void(*stomp_cb_t)(stomp_session_t *s, void *callback_ctx, void *session_
  * @param cb callback to register
  */
 void stomp_callback_set(stomp_session_t *s, enum stomp_cb_type type, stomp_cb_t cb);
+
+/**
+ * Register a callback when a particular event occurs, reffers only to null callbacks.
+ *
+ * @param s pointer to a session handle
+ * @param type type of event to register for
+ * @param cb callback to register
+ */
+void stomp_callback_safe_set(stomp_session_t *s, enum stomp_cb_type type, stomp_cb_t cb);
 
 /**
  * Delete callback for a particular event.
@@ -310,6 +325,28 @@ int stomp_send(stomp_session_t *s, size_t hdrc, const struct stomp_hdr *hdrs, vo
  * @return 0 on success; negative on error and errno is set appropriately
  */
 int stomp_run(stomp_session_t *s);
+
+/**
+ * Runs the library main loop.
+ * 
+ * This function will not return until either he server closes the 
+ * connection, or the client calls stomp_disconnect()
+ * Uses stomp_run setting default callbacks
+ *
+ * @param s Pointer to a session handle.
+ *
+ * @return 0 on success; negative on error and errno is set appropriately
+ */
+int stomp_run_register(stomp_session_t *s);
+
+/** Parse stomp protocol version */
+static int parse_version(const char *s, enum stomp_prot *v);
+
+/** Parse heart-beat version */ 
+static int parse_heartbeat(const char *s, unsigned long *x, unsigned long *y);
+
+/** Set session context */
+void stomp_ctx_set(stomp_session_t *s, void *session_ctx);
 
 #ifdef __cplusplus
 }

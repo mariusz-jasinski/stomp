@@ -14,10 +14,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
+
 #include "hdr.h"
 
+/** Get proper hdr identified by key in stomp header array */
 const char *hdr_get(size_t count, const struct stomp_hdr *hdrs, const char *key)
 {
 	size_t i;
@@ -31,3 +34,6 @@ const char *hdr_get(size_t count, const struct stomp_hdr *hdrs, const char *key)
 
 	return NULL;
 }
+
+
+
