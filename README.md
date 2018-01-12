@@ -2,7 +2,7 @@
 
 STOMP client library written in C.
 
-Fork for Asseco internal project.
+Fork for Asseco internal project. HP-UX aCC platform compatible.
 
 ## The library aims to implement support for the following protocols:
 
