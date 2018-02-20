@@ -1,5 +1,6 @@
 /*
- * Copyright 2018 Asseco Poland SA
+ * Copyright 2013 Evgeni Dobrev <evgeni_dobrev@developer.bg>
+ * Changes 2018 by Asseco Poland SA
  *
  * This library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -14,22 +15,25 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <stdlib.h>
+#include <stddef.h>
+#include <string.h>
 
-#include <time.h>
-#include <stdio.h>
-#include "debug.h"
+#include "hdr.h"
 
-int glob_debug_level = 0;
-
-void debug_set_level(int glob_debug_level_in)
+const char *hdr_get(size_t count, const struct stomp_hdr *hdrs, const char *key)
 {
-  glob_debug_level = glob_debug_level_in;
+	size_t i;
+	const struct stomp_hdr *h;
+	for (i=0; i < count; i++) {
+		h = &hdrs[i];
+		if (!strcmp(key, h->key)) {
+			return h->val;
+		}
+	}
+
+	return NULL;
 }
 
-int debug_get_interval(struct timespec *start, struct timespec *end, const char *desc)
-{
-	int elapsed = (end->tv_sec - start->tv_sec) * 1000000000 +  (end->tv_nsec - start->tv_nsec);
-  //STOMP_PRINT_DESC_INT(desc, elapsed)
-  return elapsed;
-}
+
 

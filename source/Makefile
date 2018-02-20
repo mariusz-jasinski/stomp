@@ -20,7 +20,7 @@ MODULY = \
 	stomp.o
 
 LIBNAME=libstomp-c-library.sl
-SERVER=BC_Menadzer
+SERVER=STOMP_Testy
 
 default: $(MODULY)
 	@echo STOMP: Library compilation [$(LIBNAME)]
@@ -31,15 +31,15 @@ clean:
 	@rm -f $(MODULY)
 
 copy_sl:
-	@echo KOPIOWANIE $(LIBNAME) DO: $(DOMENA_BIN_PATH)
+	@echo STOMP: Copying $(LIBNAME) to: $(DOMENA_BIN_PATH)
 	cp -Rp ../lib/${LIBNAME} $(DOMENA_BIN_PATH)/
   
 copy:
-	@echo STOP SERWERA: [$(SERVER)]
+	@echo STOMP: Stop server: [$(SERVER)]
 	@tmshutdown -s $(SERVER)
 	@echo waiting 3s ...
 	@sleep 3
-	@echo KOPIOWANIE $(LIBNAME) DO: $(DOMENA_BIN_PATH)
+	@echo STOMP: Copying $(LIBNAME) to: $(DOMENA_BIN_PATH)
 	cp -Rp ../lib/${LIBNAME} $(DOMENA_BIN_PATH)/
-	@echo START SERWERA
+	@echo STOMP: Start server:
 	@tmboot -s $(SERVER)

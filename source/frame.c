@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 Evgeni Dobrev <evgeni_dobrev@developer.bg>
+ * Changes 2018 by Asseco Poland SA
  *
  * This library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -26,7 +27,7 @@
 
 static int parse_content_length(const char *s, size_t *len)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
 
 	size_t tmp_len;
 	char *endptr;
@@ -57,7 +58,7 @@ static int parse_content_length(const char *s, size_t *len)
 
 frame_t *frame_new()
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
 
 	frame_t *f = (frame_t*)calloc(1, sizeof(*f));
 	
@@ -66,7 +67,7 @@ frame_t *frame_new()
 
 void frame_free(frame_t *f)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
 
 	free(f->stomp_hdrs);
 	free(f->hdrs);
@@ -76,7 +77,7 @@ void frame_free(frame_t *f)
 
 void frame_reset(frame_t *f)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
 
 	void *buf = f->buf;
 	size_t capacity = f->buf_capacity;
@@ -100,7 +101,7 @@ void frame_reset(frame_t *f)
 
 static size_t buflene(const void *data, size_t len)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
 
 	char c;
 	size_t lene = 0;
@@ -121,7 +122,7 @@ static size_t buflene(const void *data, size_t len)
 
 static void *frame_alloc(frame_t *f, size_t len)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
   
 	size_t capacity;
 	void *buf;
@@ -146,7 +147,7 @@ static void *frame_alloc(frame_t *f, size_t len)
 
 static void *frame_bufcat(frame_t *f, const void *data, size_t len)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
 
 	void *dest;
 
@@ -164,7 +165,7 @@ static void *frame_bufcat(frame_t *f, const void *data, size_t len)
 
 static void *frame_bufcate(frame_t *f, const void *data, size_t len)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
   
 	size_t i;
 	void *dest;
@@ -216,7 +217,7 @@ static void *frame_bufcate(frame_t *f, const void *data, size_t len)
 
 int frame_cmd_set(frame_t *f, const char *cmd)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
   
 	void *dest;
 	size_t len;
@@ -259,7 +260,7 @@ int frame_cmd_set(frame_t *f, const char *cmd)
 
 int frame_hdr_add(frame_t *f, const char *key, const char *val)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
 
 	struct frame_hdr *h;
 	void *dest;
@@ -350,7 +351,7 @@ int frame_hdr_add(frame_t *f, const char *key, const char *val)
 
 int frame_hdrs_add(frame_t *f, size_t hdrc, const struct stomp_hdr *hdrs)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
   
 	size_t i;
 	const struct stomp_hdr *h;
@@ -372,7 +373,7 @@ int frame_hdrs_add(frame_t *f, size_t hdrc, const struct stomp_hdr *hdrs)
 
 static size_t frame_hdr_get(frame_t *f, const char *key, const char **val)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
 
 	size_t i;
 	const struct frame_hdr *h;
@@ -390,7 +391,7 @@ static size_t frame_hdr_get(frame_t *f, const char *key, const char **val)
 
 int frame_body_set(frame_t *f, const void *data, size_t len)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
   
 	void *dest;
 	ptrdiff_t offset;
@@ -435,7 +436,7 @@ int frame_body_set(frame_t *f, const void *data, size_t len)
 
 ssize_t frame_write(int fd, frame_t *f) 
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
  
 	size_t left; 
 	ssize_t n;
@@ -464,7 +465,7 @@ ssize_t frame_write(int fd, frame_t *f)
 
 static enum read_state frame_read_body(frame_t *f, char c) 
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
   
 	void *tmp;
 	enum read_state state = f->read_state;
@@ -501,7 +502,7 @@ static enum read_state frame_read_body(frame_t *f, char c)
 
 static enum read_state frame_read_init(frame_t *f, char c) 
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
 
 	void *tmp;
 	enum read_state state = f->read_state;
@@ -531,7 +532,7 @@ static enum read_state frame_read_init(frame_t *f, char c)
 
 static enum read_state frame_read_cmd(frame_t *f, char c) 
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
 	
   enum read_state state = f->read_state;
 	
@@ -570,7 +571,7 @@ static enum read_state frame_read_cmd(frame_t *f, char c)
 
 static enum read_state frame_read_hdr(frame_t *f, char c) 
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
   
 	struct frame_hdr *h;
 	void *tmp;
@@ -643,7 +644,7 @@ static enum read_state frame_read_hdr(frame_t *f, char c)
 
 static enum read_state frame_read_hdr_esc(frame_t *f, char c) 
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
 
 	char *buf;
 	void *tmp;
@@ -676,7 +677,7 @@ static enum read_state frame_read_hdr_esc(frame_t *f, char c)
 
 int frame_read(int fd, frame_t *f)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
   
 	char c = 0;
 	
@@ -716,7 +717,7 @@ int frame_read(int fd, frame_t *f)
 
 size_t frame_cmd_get(frame_t *f, const char **cmd)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
 
 	if (!f->cmd_len) {
 		return 0;
@@ -728,7 +729,7 @@ size_t frame_cmd_get(frame_t *f, const char **cmd)
 
 size_t frame_hdrs_get(frame_t *f, const struct stomp_hdr **hdrs, int *err)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
 
 	struct stomp_hdr *h;
 	size_t i;
@@ -768,7 +769,7 @@ size_t frame_hdrs_get(frame_t *f, const struct stomp_hdr **hdrs, int *err)
 
 size_t frame_body_get(frame_t *f, const void **body)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_FRAME)
   
 	if (!f->body_len) {
 		return 0;

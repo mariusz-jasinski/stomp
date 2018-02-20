@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 Evgeni Dobrev <evgeni_dobrev@developer.bg>
+ * Changes 2018 by Asseco Poland SA
  *
  * This library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -347,6 +348,15 @@ static int parse_heartbeat(const char *s, unsigned long *x, unsigned long *y);
 
 /** Set session context */
 void stomp_ctx_set(stomp_session_t *s, void *session_ctx);
+
+/** Get session context */
+void *stomp_ctx_get(stomp_session_t *s); 
+
+/** Turn off mail loop working in stomp_run */
+void stomp_run_off(stomp_session_t *s);
+
+/** Get variable run */
+int stomp_run_get(stomp_session_t *s);
 
 #ifdef __cplusplus
 }

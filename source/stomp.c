@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 Evgeni Dobrev <evgeni_dobrev@developer.bg>
+ * Changes 2018 by Asseco Poland SA
  *
  * This library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -65,7 +66,7 @@ struct _stomp_session {
 
 static int parse_version(const char *s, enum stomp_prot *v)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
   
 	enum stomp_prot tmp_v;
 
@@ -90,7 +91,7 @@ static int parse_version(const char *s, enum stomp_prot *v)
 }
 static int parse_heartbeat(const char *s, unsigned long *x, unsigned long *y)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
   
 	unsigned long tmp_x, tmp_y;
 	char *endptr;
@@ -141,7 +142,7 @@ static int parse_heartbeat(const char *s, unsigned long *x, unsigned long *y)
 
 stomp_session_t *stomp_session_new(void *session_ctx)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
   
 	stomp_session_t *s = (stomp_session_t*)calloc(1, sizeof(*s));
 	if (!s) {
@@ -167,7 +168,7 @@ stomp_session_t *stomp_session_new(void *session_ctx)
 
 void stomp_session_free(stomp_session_t *s)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
   
 	frame_free(s->frame_out);
 	frame_free(s->frame_in);
@@ -176,7 +177,7 @@ void stomp_session_free(stomp_session_t *s)
 
 void stomp_callback_set(stomp_session_t *s, enum stomp_cb_type type, stomp_cb_t cb)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
 
 	if (!s) {
 		return;
@@ -184,18 +185,23 @@ void stomp_callback_set(stomp_session_t *s, enum stomp_cb_type type, stomp_cb_t 
 
 	switch (type) {
 		case SCB_CONNECTED:
+			STOMP_DEBUG_STR(LEVEL_STOMP,"SCB_CONNECTED")
 			s->callbacks.connected = cb;
 			break;
 		case SCB_ERROR:
+			STOMP_DEBUG_STR(LEVEL_STOMP,"SCB_ERROR")
 			s->callbacks.error = cb;
 			break;
 		case SCB_MESSAGE:
+			STOMP_DEBUG_STR(LEVEL_STOMP,"SCB_MESSAGE")
 			s->callbacks.message = cb;
 			break;
 		case SCB_RECEIPT:
+			STOMP_DEBUG_STR(LEVEL_STOMP,"SCB_RECEIPT")
 			s->callbacks.receipt = cb;
 			break;
 		case SCB_USER:
+			STOMP_DEBUG_STR(LEVEL_STOMP,"SCB_USER")
 			s->callbacks.user = cb;
 		default:
 			return;
@@ -235,7 +241,7 @@ void stomp_callback_safe_set(stomp_session_t *s, enum stomp_cb_type type, stomp_
 
 void stomp_callback_del(stomp_session_t *s, enum stomp_cb_type type)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
 
 	if (!s) {
 		return;
@@ -264,8 +270,11 @@ void stomp_callback_del(stomp_session_t *s, enum stomp_cb_type type)
 
 int stomp_connect(stomp_session_t *s, const char *host, const char *service, size_t hdrc, const struct stomp_hdr *hdrs)
 {
-  STOMP_DEBUG_FUNCTION
-  
+	STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
+	STOMP_DEBUG_DESC_STR(LEVEL_STOMP,"host",host)
+	STOMP_DEBUG_DESC_STR(LEVEL_STOMP,"port",service)
+	STOMP_DEBUG_DESC_HDRS(LEVEL_STOMP,"hdr", hdrc, hdrs)
+
 	struct addrinfo hints;
 	struct addrinfo *result, *rp;
 	int sfd;
@@ -315,6 +324,7 @@ int stomp_connect(stomp_session_t *s, const char *host, const char *service, siz
 	frame_reset(s->frame_out);
 
 	if (frame_cmd_set(s->frame_out, "CONNECT")) {
+		s->run = 0;
 		return -1;
 	}
 	
@@ -322,6 +332,7 @@ int stomp_connect(stomp_session_t *s, const char *host, const char *service, siz
 	s->broker_hb = y;
 	
 	if (frame_hdrs_add(s->frame_out, hdrc, hdrs)) {
+		s->run = 0;
 		return -1;
 	}
 
@@ -337,8 +348,9 @@ int stomp_connect(stomp_session_t *s, const char *host, const char *service, siz
 
 int stomp_disconnect(stomp_session_t *s, size_t hdrc, const struct stomp_hdr *hdrs)
 {
-  STOMP_DEBUG_FUNCTION
-  
+	STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
+	STOMP_DEBUG_DESC_HDRS(LEVEL_STOMP,"hdr", hdrc, hdrs)  
+
 	frame_reset(s->frame_out);
 
 	if (frame_cmd_set(s->frame_out, "DISCONNECT")) {
@@ -362,8 +374,9 @@ int stomp_disconnect(stomp_session_t *s, size_t hdrc, const struct stomp_hdr *hd
 // TODO enforce different client-ids in case they are provided with hdrs
 int stomp_subscribe(stomp_session_t *s, size_t hdrc, const struct stomp_hdr *hdrs)
 {
-  STOMP_DEBUG_FUNCTION
-
+	STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
+	STOMP_DEBUG_DESC_HDRS(LEVEL_STOMP,"hdr", hdrc, hdrs)
+  
 	const char *ack;
 	char buf[MAXBUFLEN];
 	int client_id = 0;
@@ -419,8 +432,8 @@ int stomp_subscribe(stomp_session_t *s, size_t hdrc, const struct stomp_hdr *hdr
 
 int stomp_unsubscribe(stomp_session_t *s, int client_id, size_t hdrc, const struct stomp_hdr *hdrs)
 {
-  STOMP_DEBUG_FUNCTION
-
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
+	STOMP_DEBUG_DESC_HDRS(LEVEL_STOMP,"hdr", hdrc, hdrs)
 	char buf[MAXBUFLEN];
 	const char *id = hdr_get(hdrc, hdrs, "id");
 	const char *destination = hdr_get(hdrc, hdrs, "destination");
@@ -468,7 +481,7 @@ int stomp_unsubscribe(stomp_session_t *s, int client_id, size_t hdrc, const stru
 // TODO enforce different tx_ids
 int stomp_begin(stomp_session_t *s, size_t hdrc, const struct stomp_hdr *hdrs)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
 
 	if (!hdr_get(hdrc, hdrs, "transaction")) {
 		errno = EINVAL;
@@ -497,7 +510,7 @@ int stomp_begin(stomp_session_t *s, size_t hdrc, const struct stomp_hdr *hdrs)
 
 int stomp_abort(stomp_session_t *s, size_t hdrc, const struct stomp_hdr *hdrs)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
 
 	if (!hdr_get(hdrc, hdrs, "transaction")) {
 		errno = EINVAL;
@@ -526,7 +539,8 @@ int stomp_abort(stomp_session_t *s, size_t hdrc, const struct stomp_hdr *hdrs)
 
 int stomp_ack(stomp_session_t *s, size_t hdrc, const struct stomp_hdr *hdrs)
 {
-  STOMP_DEBUG_FUNCTION
+	STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
+	STOMP_DEBUG_DESC_HDRS(LEVEL_STOMP,"hdr", hdrc, hdrs)
 
 	switch(s->protocol) {
 		case SPL_12:
@@ -575,7 +589,8 @@ int stomp_ack(stomp_session_t *s, size_t hdrc, const struct stomp_hdr *hdrs)
 
 int stomp_nack(stomp_session_t *s, size_t hdrc, const struct stomp_hdr *hdrs)
 {
-  STOMP_DEBUG_FUNCTION
+	STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
+	STOMP_DEBUG_DESC_HDRS(LEVEL_STOMP,"hdr", hdrc, hdrs)
   
 	switch(s->protocol) {
 		case SPL_12:
@@ -621,7 +636,7 @@ int stomp_nack(stomp_session_t *s, size_t hdrc, const struct stomp_hdr *hdrs)
 
 int stomp_commit(stomp_session_t *s, size_t hdrc, const struct stomp_hdr *hdrs)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
   
 	if (!hdr_get(hdrc, hdrs, "transaction")) {
 		errno = EINVAL;
@@ -650,9 +665,10 @@ int stomp_commit(stomp_session_t *s, size_t hdrc, const struct stomp_hdr *hdrs)
 
 int stomp_send(stomp_session_t *s, size_t hdrc, const struct stomp_hdr *hdrs, void *body, size_t body_len)
 {
-  STOMP_DEBUG_FUNCTION
-  STOMP_DEBUG_DESC_STR("body", body)
-  STOMP_DEBUG_DESC_INT("body size", body_len)
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
+  STOMP_DEBUG_DESC_STR(LEVEL_STOMP,"body", body)
+  STOMP_DEBUG_DESC_INT(LEVEL_STOMP,"body size", body_len)
+  STOMP_DEBUG_DESC_HDRS(LEVEL_STOMP,"hdr", hdrc, hdrs)
     
 	char buf[MAXBUFLEN];
 	const char *len;
@@ -664,8 +680,7 @@ int stomp_send(stomp_session_t *s, size_t hdrc, const struct stomp_hdr *hdrs, vo
 
 	frame_reset(s->frame_out);
 
-  STOMP_DEBUG_DESC_SESSION("session (begin)", s)
-  
+  STOMP_DEBUG_DESC_SESSION(LEVEL_STOMP, "session begin", s)
 	if (frame_cmd_set(s->frame_out, "SEND")) {
 		return -1;
 	}
@@ -687,22 +702,19 @@ int stomp_send(stomp_session_t *s, size_t hdrc, const struct stomp_hdr *hdrs, vo
 		return -1;
 	}
 	
-  STOMP_DEBUG_STR("frame_write (start)")
 	if (frame_write(s->broker_fd, s->frame_out) < 0) {
-    STOMP_DEBUG_STR("frame_write = -1")
 		s->run = 0;
 		return -1;
 	}
-  STOMP_DEBUG_STR("frame_write (end)")
 	
 	clock_gettime(CLOCK_REALTIME, &s->last_write);
-  STOMP_DEBUG_DESC_SESSION("session (end)",s)
+  STOMP_DEBUG_DESC_SESSION(LEVEL_STOMP,"session (end)",s)
 	return 0;
 }
 
 static void on_connected(stomp_session_t *s) 
 { 
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
 
 	struct stomp_ctx_connected e;
 	frame_t *f = s->frame_in;
@@ -753,7 +765,7 @@ static void on_connected(stomp_session_t *s)
 
 static void on_receipt(stomp_session_t *s) 
 { 
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
 
 	struct stomp_ctx_receipt e;
   int err = 0;
@@ -773,7 +785,7 @@ static void on_receipt(stomp_session_t *s)
 
 static void on_error(stomp_session_t *s) 
 { 
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
 
 	struct stomp_ctx_error e;
   int err = 0;  
@@ -794,7 +806,7 @@ static void on_error(stomp_session_t *s)
 
 static void on_message(stomp_session_t *s) 
 { 
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
 
 	struct stomp_ctx_message e;
   int err = 0;
@@ -815,7 +827,7 @@ static void on_message(stomp_session_t *s)
 
 static int on_server_cmd(stomp_session_t *s)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
 
 	int err;
 	const char *cmd;
@@ -852,7 +864,7 @@ static int on_server_cmd(stomp_session_t *s)
 
 int stomp_run(stomp_session_t *s)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
   
 	fd_set rd;
 	int r;
@@ -936,62 +948,55 @@ stomp_run_error:
 
 void stomp_ctx_set(stomp_session_t *s, void *session_ctx) 
 { 
-  STOMP_DEBUG_FUNCTION
-
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
   s->ctx = session_ctx;
 }
 
+void *stomp_ctx_get(stomp_session_t *s) 
+{ 
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
+  return s->ctx;
+}
 //--------------DEFAULT CALLBACKS-------------------------------------------------------------//
-struct ctx {
-	const char *destination;
-};
-
 
 static void default_connected(stomp_session_t *s, void *ctx, void *session_ctx)
 {
-  STOMP_DEBUG_FUNCTION
-	struct ctx *c = (struct ctx *)session_ctx;
-	struct stomp_hdr hdrs[] = {
-		{"destination", c->destination},
-	};
-
-	int err = stomp_subscribe(s, sizeof(hdrs)/sizeof(struct stomp_hdr), hdrs);
-	if (err<0) {
-		perror("stomp");
-	}
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
+	struct stomp_ctx_connected *e = (stomp_ctx_connected *)ctx;
+  STOMP_DEBUG_DESC_HDRS(LEVEL_STOMP,"default_connected", e->hdrc, e->hdrs)
 }
 
 static void default_message(stomp_session_t *s, void *ctx, void *session_ctx)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
 	struct stomp_ctx_message *e = (stomp_ctx_message *)ctx;
-  STOMP_DEBUG_DESC_HDRS ("default_message", e->hdrc, e->hdrs)
-  STOMP_DEBUG_DESC_STR("message", (const char *)e->body)
+  STOMP_DEBUG_DESC_HDRS(LEVEL_STOMP,"default_message", e->hdrc, e->hdrs)
+  STOMP_DEBUG_DESC_STR(LEVEL_STOMP,"message", (const char *)e->body)
 }
 
 static void default_error(stomp_session_t *session, void *ctx, void *session_ctx)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
 	struct stomp_ctx_error *e = (struct stomp_ctx_error *)ctx;
-  STOMP_DEBUG_DESC_HDRS ("default_error", e->hdrc, e->hdrs)
-  STOMP_DEBUG_DESC_STR("error", (const char *)e->body)
+  STOMP_DEBUG_DESC_HDRS(LEVEL_STOMP,"default_error", e->hdrc, e->hdrs)
+  STOMP_DEBUG_DESC_STR(LEVEL_STOMP,"error", (const char *)e->body)
 }
 
 static void default_receipt(stomp_session_t *s, void *ctx, void *session_ctx)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
 	struct stomp_ctx_receipt *e = (struct stomp_ctx_receipt *)ctx;
-  STOMP_DEBUG_DESC_HDRS ("default_receipt", e->hdrc, e->hdrs)
+  STOMP_DEBUG_DESC_HDRS(LEVEL_STOMP,"default_receipt", e->hdrc, e->hdrs)
 }
 
 static void default_user(stomp_session_t *s, void *ctx, void *session_ctx) 
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
 }
 
 int stomp_run_register(stomp_session_t *s)
 {
-  STOMP_DEBUG_FUNCTION
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
 
 	stomp_callback_safe_set(s, SCB_CONNECTED, default_connected);
 	stomp_callback_safe_set(s, SCB_ERROR, default_error);
@@ -1000,5 +1005,17 @@ int stomp_run_register(stomp_session_t *s)
 	stomp_callback_safe_set(s, SCB_USER, default_user);
 
 	return stomp_run(s);
+}
+
+void stomp_run_off(stomp_session_t *s) 
+{
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
+  s->run = 0;
+}
+
+int stomp_run_get(stomp_session_t *s) 
+{
+  STOMP_DEBUG_FUNCTION(LEVEL_STOMP)
+  return s->run;
 }
 
